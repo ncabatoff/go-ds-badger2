@@ -748,8 +748,16 @@ func (t *txn) query(q dsq.Query) (dsq.Results, error) {
 
 		defer it.Close()
 
-		// All iterators must be started by rewinding.
-		it.Rewind()
+		if len(opt.Prefix) != 0 {
+			if opt.Reverse {
+				it.Seek(append(opt.Prefix, 0xFF))
+			} else {
+				it.Seek(opt.Prefix)
+			}
+		} else {
+			// All iterators must be started by rewinding.
+			it.Rewind()
+		}
 
 		// skip to the offset
 		for skipped := 0; skipped < q.Offset && it.Valid(); it.Next() {
